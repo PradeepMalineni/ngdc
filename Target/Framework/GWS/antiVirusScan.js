@@ -1,1 +1,0 @@
-// Anti Virus Scan Logic

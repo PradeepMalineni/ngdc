@@ -1,1 +1,0 @@
-// Strip Response Headers
