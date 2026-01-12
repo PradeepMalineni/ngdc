@@ -110,3 +110,38 @@ Do not hardcode rules.
 Design this as a flexible, extensible, prompt-based system.
 
 Generate clean, production-quality Python code with clear comments.
+
+Map the legacy behavior to the latest DataPower framework.
+
+Rules:
+- Use standardized naming
+- Externalize configuration
+- Centralize error handling
+- Use reusable policy patterns
+- Ensure observability
+
+Generate:
+1. New gateway structure
+2. Required policies
+3. Updated flow diagram (textual)
+
+Generate the modernized DataPower configuration.
+
+Output:
+- Gateway XML
+- XSLT placeholders
+- Policy references
+- Clear TODO markers where answers are pending
+
+Do not include guessed values.
+Mark unknowns explicitly.
+Generate migration documentation including:
+
+1. Legacy overview
+2. New architecture overview
+3. Security model
+4. Assumptions
+5. Open questions
+6. Migration risks
+7. Validation checklist
+
