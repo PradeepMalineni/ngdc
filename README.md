@@ -145,3 +145,70 @@ Generate migration documentation including:
 6. Migration risks
 7. Validation checklist
 
+START
+  |
+  v
+Is this a NEW service?
+  |
+  +-- YES (Greenfield)
+  |     |
+  |     v
+  |   Pattern?
+  |     |
+  |     +-- Internal
+  |     |     |
+  |     |     +-- REST + OAuth?
+  |     |     |       -> APG Hybrid (Self-Service)
+  |     |     |
+  |     |     +-- SOAP / MQ / mTLS?
+  |     |             -> DataPower (NGDC)
+  |     |
+  |     +-- Ingress
+  |     |     |
+  |     |     +-- OAuth supported by partner?
+  |     |     |       -> APG Hybrid
+  |     |     |
+  |     |     +-- SOAP or mTLS only?
+  |     |             -> DataPower (NGDC)
+  |     |
+  |     +-- Egress
+  |           |
+  |           +-- OAuth / REST?
+  |           |       -> APG Hybrid
+  |           |
+  |           +-- MQ / SOAP / mTLS?
+  |                   -> DataPower (NGDC)
+  |
+  +-- NO (Brownfield)
+        |
+        v
+    Current Gateway?
+        |
+        +-- APG OPDK
+        |     |
+        |     v
+        |   Pattern?
+        |     |
+        |     +-- Ingress
+        |     |     -> Partner migrates via HD60
+        |     |
+        |     +-- Egress / Internal
+        |           -> APIM team migrates
+        |
+        +-- DataPower
+              |
+              v
+        Is service SIMPLE & PASS-THROUGH?
+              |
+              +-- YES (≈70%)
+              |     |
+              |     +-- REST + OAuth?
+              |     |       -> Migrate to APG Hybrid
+              |     |
+              |     +-- SOAP / mTLS / MQ?
+              |             -> BLOCKER (Needs pattern/tool)
+              |
+              +-- NO (≈30%)
+                    -> Modernize on DataPower (NGDC)
+
+
