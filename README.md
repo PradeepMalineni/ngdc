@@ -222,4 +222,228 @@ Is this a NEW service?
 | Brownfield | DataPower | Any      | SOAP      | mTLS     | Complex      | DataPower (NGDC) | App Team        | Modernization |
 
 
+# API Gateway Migration – End-to-End Flow Coverage
+
+**Scope:** Greenfield & Brownfield services migrating from Legacy Data Centers to New Data Center (NGDC)  
+**Target Gateways:** APG Hybrid (Primary), DataPower (Niche / Exception)
+
+---
+
+## 1. Core Principles
+
+### 1.1 Strategic Direction
+- APG Hybrid is the **default target gateway**
+- DataPower is retained only for:
+  - Complex transformations
+  - Protocols / security patterns not supported by APG Hybrid
+- Target footprint reduction:
+  - ~70% DataPower services → APG Hybrid
+  - ~30% remain on DataPower (modernized in NGDC)
+
+### 1.2 Definitions
+- **Greenfield**: Newly onboarded services
+- **Brownfield**: Existing services
+- **Patterns**
+  - Ingress (External → Bank)
+  - Egress (Bank → External)
+  - Internal (Bank → Bank)
+- **Protocols**
+  - HTTP (Sync)
+  - MQ (Async)
+- **Interfaces**
+  - REST
+  - SOAP
+- **Security**
+  - OAuth
+  - mTLS
+  - BasicAuth (primarily Egress)
+
+---
+
+## 2. Greenfield Flows (Target State)
+
+> **Design intent:**  
+> All Greenfield services should be **self-service**, wherever technically feasible.
+
+---
+
+### 2.1 Greenfield – Ingress
+
+| Combination | Target Gateway | Self-Service | Status | Open Gaps / Questions |
+|------------|---------------|--------------|--------|-----------------------|
+| REST + OAuth | APG Hybrid | Yes | ✅ Supported (Golden Path) | Is partner self-service fully enabled on the portal? |
+| REST + mTLS | ❓ | ❓ | ⚠️ Unknown | Does APG Hybrid support mTLS for Ingress? |
+| SOAP + OAuth | ❓ | ❓ | ⚠️ Unknown | Is SOAP supported in APG Hybrid? |
+| SOAP + mTLS | ❓ | ❓ | ❌ Gap | What is the go-forward approach? DataPower fallback? |
+
+---
+
+### 2.2 Greenfield – Egress
+
+| Combination | Target Gateway | Self-Service | Status | Open Gaps / Questions |
+|------------|---------------|--------------|--------|-----------------------|
+| REST + OAuth | APG Hybrid | Yes | ⚠️ Assumed | Is outbound OAuth token handling validated? |
+| REST + mTLS | ❓ | ❓ | ⚠️ Unknown | Is mTLS supported for outbound traffic? |
+| SOAP | ❓ | ❓ | ⚠️ Unknown | Is SOAP supported for Egress? |
+| BasicAuth (Backend) | ❓ | ❓ | ⚠️ Unknown | Is BasicAuth supported/tested in Hybrid? |
+| Partner IDP (Outbound OAuth) | ❓ | ❓ | ⚠️ Unknown | Has integration with partner IDPs been tested? |
+
+---
+
+### 2.3 Greenfield – Internal
+
+| Combination | Target Gateway | Self-Service | Status | Open Gaps / Questions |
+|------------|---------------|--------------|--------|-----------------------|
+| REST + OAuth | APG Hybrid | Yes | ⚠️ Likely | Are default OAuth scopes enforced? |
+| REST + mTLS | ❓ | ❓ | ⚠️ Unknown | Is internal mTLS supported? |
+| SOAP | ❓ | ❓ | ⚠️ Unknown | Is SOAP supported internally? |
+| MQ | ❓ | ❓ | ❌ Gap | No defined target architecture for Greenfield MQ |
+
+---
+
+## 3. Brownfield – APG OPDK → APG Hybrid
+
+### Ownership Model
+- **Internal services** → Partner / App team
+- **Ingress & Egress** → Central APIM team
+- **Primary accelerator** → HD-60
+
+---
+
+### 3.1 Brownfield – Ingress (APG OPDK)
+
+| Combination | Target | Tool | Owner | Status | Open Questions |
+|------------|--------|------|-------|--------|----------------|
+| REST + OAuth | APG Hybrid | HD-60 | Partner | ⚠️ Partial | Are OAuth configs fully migrated? |
+| SOAP | ❓ | ❓ | ❓ | ❌ Gap | SOAP support post-migration? |
+| mTLS | ❓ | ❓ | ❓ | ❌ Gap | Does Hybrid support mTLS Ingress? |
+| Bulk Migration | APG Hybrid | HD-60 | APIM | ❓ | Does HD-60 support bulk proxy migration? |
+
+---
+
+### 3.2 Brownfield – Egress (APG OPDK)
+
+| Combination | Target | Tool | Owner | Status | Open Questions |
+|------------|--------|------|-------|--------|----------------|
+| REST + OAuth | APG Hybrid | HD-60 | APIM | ⚠️ Partial | Is outbound OAuth flow compatible? |
+| SOAP | ❓ | ❓ | ❓ | ❌ Gap | SOAP Egress support? |
+| mTLS | ❓ | ❓ | ❓ | ❌ Gap | mTLS outbound support? |
+| Bulk Migration | APG Hybrid | HD-60 | APIM | ❓ | Bulk migration capability? |
+
+---
+
+### 3.3 Brownfield – Internal (APG OPDK)
+
+| Combination | Target | Tool | Owner | Status | Open Questions |
+|------------|--------|------|-------|--------|----------------|
+| REST + OAuth | APG Hybrid | HD-60 | Partner | ⚠️ Partial | Does scope enforcement impact consumers? |
+| SOAP | ❓ | ❓ | ❓ | ❌ Gap | Internal SOAP support? |
+| mTLS | ❓ | ❓ | ❓ | ❌ Gap | Internal mTLS support? |
+
+---
+
+## 4. Brownfield – DataPower → APG Hybrid / DataPower NGDC
+
+> **Highest complexity and highest risk area**
+
+---
+
+### 4.1 Service Classification Requirement
+
+| Classification | Action |
+|---------------|--------|
+| Simple / Pass-through | Migrate to APG Hybrid |
+| Complex Transformation | Remain on DataPower (NGDC) |
+
+**Open Question**
+- Is service classification automated or manual?
+
+---
+
+### 4.2 DataPower – Internal
+
+| Aspect | Current Reality | Open Gaps |
+|------|----------------|-----------|
+| Proxy creation | Manual / Visual | No automated conversion |
+| OAS availability | Rare | OAS required for Hybrid |
+| Migration model | Dev assisted, higher env partner-driven | No accelerator |
+| Tooling | None | Need template-based proxy generator |
+
+---
+
+### 4.3 DataPower – Ingress & Egress
+
+| Aspect | Current Reality | Open Gaps |
+|------|----------------|-----------|
+| Ownership | APIM team | Who executes migration at scale? |
+| SOAP prevalence | High | SOAP → REST strategy missing |
+| OAS generation | Hard from WSDL / flows | No fast solution |
+| Accelerators | None | Partial / stub OAS needed |
+
+---
+
+## 5. Producer vs Consumer Journey
+
+### 5.1 Producer Journey (Current Focus)
+- Proxy creation
+- Migration tooling
+- Deployment and ownership
+
+### 5.2 Consumer Journey (Open Gap)
+
+**Open Questions**
+- How do consumers discover migrated APIs?
+- Do endpoints or contracts change?
+- Are OAuth scopes newly enforced?
+- How is backward compatibility ensured?
+- How are consumers notified?
+
+---
+
+## 6. Accelerator Inventory
+
+### Existing
+- **HD-60**
+  - APG OPDK → APG Hybrid
+  - ❓ Bulk support
+  - ❓ Coverage across all patterns
+
+### Missing / Needed
+- DataPower → APG Hybrid proxy generator
+- Partial / stub OAS generator
+- SOAP → REST façade accelerator
+- mTLS / certificate migration utility
+- Consumer compatibility tooling
+
+---
+
+## 7. Summary of Open Gaps
+
+### Platform Gaps
+- SOAP support in APG Hybrid
+- mTLS support (Ingress / Egress / Internal)
+- MQ target architecture
+
+### Tooling Gaps
+- DataPower migration accelerator
+- Bulk migration support
+- OAS generation at scale
+
+### Process Gaps
+- Ownership clarity
+- Consumer journey definition
+- Exception handling model
+
+---
+
+## 8. Key Statement
+
+> “This migration is not constrained by intent or strategy.  
+> It is constrained by **tooling readiness, ownership clarity, and protocol coverage**.  
+> Until these are addressed, migration velocity will remain limited.”
+
+---
+
+
+
 
