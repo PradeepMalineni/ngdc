@@ -211,4 +211,15 @@ Is this a NEW service?
               +-- NO (≈30%)
                     -> Modernize on DataPower (NGDC)
 
+                    | Field Type | Pattern   | Protocol | Interface | Security | Complexity   | Target Gateway   | Migration Owner | Tool          |
+| ---------- | --------- | -------- | --------- | -------- | ------------ | ---------------- | --------------- | ------------- |
+| Greenfield | Internal  | HTTP     | REST      | OAuth    | Any          | APG Hybrid       | App Team        | Self-Service  |
+| Greenfield | Ingress   | HTTP     | REST      | OAuth    | Any          | APG Hybrid       | Partner         | Self-Service  |
+| Greenfield | Ingress   | HTTP     | SOAP      | mTLS     | Any          | DataPower (NGDC) | App Team        | Manual        |
+| Brownfield | APG OPDK  | Ingress  | REST      | OAuth    | Pass-through | APG Hybrid       | Partner         | HD60          |
+| Brownfield | APG OPDK  | Egress   | REST      | OAuth    | Any          | APG Hybrid       | APIM            | HD60          |
+| Brownfield | DataPower | Any      | REST      | OAuth    | Pass-through | APG Hybrid       | APIM / App      | TBD Tool      |
+| Brownfield | DataPower | Any      | SOAP      | mTLS     | Complex      | DataPower (NGDC) | App Team        | Modernization |
+
+
 
