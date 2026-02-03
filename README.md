@@ -1,4 +1,4 @@
-### DP_2_NGDC (DataPower legacy → Target conversion)
+u### DP_2_NGDC (DataPower legacy → Target conversion)
 
 This repo contains:
 - **`src/`**: unzipped legacy DataPower exports (per app)
@@ -440,9 +440,21 @@ Is this a NEW service?
 
 > “This migration is not constrained by intent or strategy.  
 > It is constrained by **tooling readiness, ownership clarity, and protocol coverage**.  
-> Until these are addressed, migration velocity will remain limited.”
+> Until these are addressed, migration velocity will remain Thank you. Now, as I step in, let’s ground ourselves in what this journey truly means. We’ve come a long way—thank you for every ounce of effort—but what excites me most is that we’re just at the beginning of what’s possible.
 
----
+Now, speaking of people: You’ve seen the names on the last slide. Those celebrating anniversaries, those recognized for performance—it’s all of you who make this journey meaningful. Congratulations, and here’s to more success together.
+
+Now let’s talk scale. We’re supporting 40 million transactions—already huge—but with only 9% of our APIs on the gateway. That tells us something powerful: We’ve achieved big things—but the potential is far greater as we scale intelligently.
+
+And that scaling momentum? We’ve seen a 30% growth in internal APIs, 65% in egress, and 69% in ingress. At the same time, API producers and consumers both rose by 29%. That’s proof that APIs aren’t just being built—they’re being used, reused, and trusted.
+
+Now, about the roadmap. We’re not just running the bank—we’re transforming it. We’re building governance, starting with audits and inventory, so we can move faster with confidence. We’re simplifying with hybrid adoption, reducing legacy platforms, and lowering complexity. And finally, we’re enhancing developer experience—standardized patterns, faster onboarding, and yes, even AI-powered support.
+
+These OKRs? They’re our transformation work. Self-service migrations, DataPower reduction, resilience across neighborhoods—this is how we’re building a future-ready platform, while still handling day-to-day operations.
+
+And lastly, this is the team making it happen. We have clear leadership, dedicated domains, and global delivery. This structure ensures we’re not just keeping up—we’re leading.
+
+So, to wrap it up: We’re balancing the present while building the future. Thank you for being part of this journey, and let’s keep pushing ahead!
 
 
 
