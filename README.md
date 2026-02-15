@@ -1,4 +1,4 @@
-u### DP_2_NGDC (DataPower legacy → Target conversion)
+hi u### DP_2_NGDC (DataPower legacy → Target conversion)
 
 This repo contains:
 - **`src/`**: unzipped legacy DataPower exports (per app)
@@ -488,4 +488,48 @@ index=esga sourcetype IN ("wf:rise:errors:txt","wf:rise:profiling:txt")
 | eval pct_above_p99=round((minutes_above_p99/total_minutes)*100,2)
 
 | eval pct_TPS_unsuccess=round((Avg_unsuccess_TPS/Avg_total_TPS)*100,2)
+
+More Gran
+index=esga sourcetype IN ("wf:rise:errors:txt","wf:rise:profiling:txt") earliest=-7d@d latest=now
+| eval is_success=if(like(_raw,"%StatDesc=Success%") OR StatDesc="Success",1,0)
+| eval is_unsuccess=if(is_success=1,0,1)
+
+| timechart span=1m count as total_tx sum(is_success) as success_tx sum(is_unsuccess) as unsuccess_tx
+
+| eval total_TPS=total_tx/60
+| eval success_TPS=success_tx/60
+| eval unsuccess_TPS=unsuccess_tx/60
+
+| eventstats perc95(total_TPS) as P95_total_TPS
+
+| eval is_top5=if(total_TPS>=P95_total_TPS,1,0)
+
+| stats
+    sum(total_tx) as total_tx_all
+    sum(success_tx) as success_tx_all
+    sum(unsuccess_tx) as unsuccess_tx_all
+    sum(eval(if(is_top5=1,total_tx,0))) as total_tx_top5
+    sum(eval(if(is_top5=1,success_tx,0))) as success_tx_top5
+    sum(eval(if(is_top5=1,unsuccess_tx,0))) as unsuccess_tx_top5
+
+| eval top5_pct_of_total=round((total_tx_top5/total_tx_all)*100,2)
+| eval top5_success_pct_of_total=round((success_tx_top5/success_tx_all)*100,2)
+| eval top5_unsuccess_pct_of_total=round((unsuccess_tx_top5/unsuccess_tx_all)*100,2)
+
+| eval within_top5_success_share=round((success_tx_top5/total_tx_top5)*100,2)
+| eval within_top5_unsuccess_share=round((unsuccess_tx_top5/total_tx_top5)*100,2)
+
+| table
+    top5_pct_of_total
+    top5_success_pct_of_total
+    top5_unsuccess_pct_of_total
+    within_top5_success_share
+    within_top5_unsuccess_share
+    total_tx_top5
+    success_tx_top5
+    unsuccess_tx_top5
+    total_tx_all
+    success_tx_all
+    unsuccess_tx_all
+
 
