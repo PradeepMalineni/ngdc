@@ -457,5 +457,35 @@ And lastly, this is the team making it happen. We have clear leadership, dedicat
 So, to wrap it up: We’re balancing the present while building the future. Thank you for being part of this journey, and let’s keep pushing ahead!
 
 
+index=esga sourcetype IN ("wf:rise:errors:txt","wf:rise:profiling:txt")
+| eval is_success=if(like(_raw,"%StatDesc=Success%"),1,0)
+| eval is_unsuccess=if(is_success=0,1,0)
 
+| timechart span=1m count as total_tx sum(is_unsuccess) as unsuccess_tx
+
+| eval TPS=total_tx/60
+| eval unsuccess_TPS=unsuccess_tx/60
+
+| eventstats perc95(TPS) as P95_TPS perc99(TPS) as P99_TPS
+| eventstats perc95(unsuccess_TPS) as P95_unsuccess_TPS perc99(unsuccess_TPS) as P99_unsuccess_TPS
+
+| eval above_p95=if(TPS>P95_TPS,1,0)
+| eval above_p99=if(TPS>P99_TPS,1,0)
+
+| stats
+    max(TPS) as Max_TPS
+    values(P95_TPS) as P95_TPS
+    values(P99_TPS) as P99_TPS
+    values(P95_unsuccess_TPS) as P95_unsuccess_TPS
+    values(P99_unsuccess_TPS) as P99_unsuccess_TPS
+    avg(unsuccess_TPS) as Avg_unsuccess_TPS
+    avg(TPS) as Avg_total_TPS
+    sum(above_p95) as minutes_above_p95
+    sum(above_p99) as minutes_above_p99
+    count as total_minutes
+
+| eval pct_above_p95=round((minutes_above_p95/total_minutes)*100,2)
+| eval pct_above_p99=round((minutes_above_p99/total_minutes)*100,2)
+
+| eval pct_TPS_unsuccess=round((Avg_unsuccess_TPS/Avg_total_TPS)*100,2)
 
