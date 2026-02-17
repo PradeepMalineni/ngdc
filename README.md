@@ -532,4 +532,80 @@ index=esga sourcetype IN ("wf:rise:errors:txt","wf:rise:profiling:txt") earliest
     success_tx_all
     unsuccess_tx_all
 
+index=esga sourcetype IN ("wf:rise:errors:txt","wf:rise:profiling:txt") earliest=-7d@d latest=now
+| rex field=_raw "\]\[(?<domain>[^\]]+)\]\[0x"
+| eval minute=_time - (_time % 60)
+
+| eventstats count as total_events
+
+| eventstats count as tmp by minute
+| eval tx_per_min=tmp
+| eval TPS=tx_per_min/60
+
+| eventstats perc95(TPS) as P95_TPS
+| where TPS>=P95_TPS
+
+| stats count as tx_in_top5 by domain
+| sort - tx_in_top5
+| head 20
+
+index=esga sourcetype IN ("wf:rise:errors:txt","wf:rise:profiling:txt") earliest=-7d@d latest=now
+| rex field=_raw "\]\[(?<domain>[^\]]+)\]\[0x"
+| eval minute=_time - (_time % 60)
+
+| eventstats count as tmp by minute
+| eval TPS=(tmp/60)
+
+| eventstats perc95(TPS) as P95_TPS
+| where TPS>=P95_TPS
+
+| stats count as tx by domain
+| eventstats sum(tx) as total_tail_tx
+| eval pct_of_tail=round((tx/total_tail_tx)*100,2)
+| sort - pct_of_tail
+| head 20
+| table domain tx pct_of_tail
+
+index=esga sourcetype IN ("wf:rise:errors:txt","wf:rise:profiling:txt") earliest=-7d@d latest=now
+| rex field=_raw "\]\[(?<domain>[^\]]+)\]\[0x"
+| eval is_success=if(like(_raw,"%StatDesc=Success%") OR StatDesc="Success",1,0)
+| eval is_unsuccess=if(is_success=1,0,1)
+| eval minute=_time - (_time % 60)
+
+| eventstats count as tmp by minute
+| eval TPS=(tmp/60)
+
+| eventstats perc95(TPS) as P95_TPS
+| where TPS>=P95_TPS
+
+| stats
+    count as total_tx
+    sum(is_success) as success_tx
+    sum(is_unsuccess) as unsuccess_tx
+  by domain
+
+| eval unsuccess_rate_pct=round((unsuccess_tx/total_tx)*100,2)
+| sort - total_tx
+| head 20
+| table domain total_tx success_tx unsuccess_tx unsuccess_rate_pct
+
+index=esga sourcetype IN ("wf:rise:errors:txt","wf:rise:profiling:txt") earliest=-7d@d latest=now
+| rex field=_raw "MsgNm=(?<MsgNm>[^|]+)"
+| eval minute=_time - (_time % 60)
+
+| eventstats count as tmp by minute
+| eval TPS=(tmp/60)
+
+| eventstats perc95(TPS) as P95_TPS
+| where TPS>=P95_TPS
+
+| stats count as tx_in_top5 by MsgNm
+| sort - tx_in_top5
+| head 20
+
+
+
+
+
+
 
