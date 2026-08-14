@@ -644,6 +644,133 @@ Special Behavior:
 
 Your responses should help leadership make decisions quickly.
 
+# ESGA Vulnerability Pattern Discovery
+
+We have approximately 80 DataPower integration repositories whose names start with `app-esga*`.
+
+We receive hundreds of vulnerability findings every week from GPT/LLM-based code scans. A major problem is recurring false positives because the LLM often analyzes code statically without understanding the complete ESGA/DataPower execution context.
+
+Our goal is to reduce this repetitive work by identifying:
+
+1. Recurring **false-positive patterns** that can safely be taught to future LLM vulnerability scanners.
+2. Recurring **true-positive root causes** that can be fixed centrally so we do not repeatedly fix the same vulnerability across many repositories.
+
+## Important Architecture
+
+There is an `ESGA DataPower Common` repository containing common DataPower files used during the build of the integration repositories.
+
+An integration-specific repo may contain the same file as Common.
+
+When that happens, we expect the integration-specific file to take precedence during the build.
+
+**First verify this behavior from the actual build logic.**
+
+Security analysis must be performed against the **effective built code**, not simply the files visible in each repository.
+
+## Known False-Positive Example
+
+One example we already see involves files such as `captureReqDatafiles` and `setroute`.
+
+`captureReqDatafiles` may capture incoming headers and store them in DataPower context variables.
+
+Later, `setroute` may restore those same values into the request being sent to the backend.
+
+An LLM may recommend replacing use of the original header with the value stored in the DP context variable.
+
+But if:
+
+`DP context value = original header`
+
+and nothing security-relevant happens between the two, then changing:
+
+`backend header = original value`
+
+to:
+
+`backend header = DP context value`
+
+may be security-equivalent and therefore a redundant remediation.
+
+Trace the **complete source → transformations → validation → context variable → sink** before classifying such findings.
+
+Do not assume this example is always an FP. Verify the complete flow.
+
+## What I Want You to Discover
+
+Scan all `app-esga*` repositories plus ESGA DataPower Common and identify recurring patterns where LLM scanners misunderstand ESGA context.
+
+For each recurring FP pattern determine:
+
+* What the LLM typically flags
+* Why it gets the context wrong
+* Complete source-to-sink evidence
+* Conditions required to classify it as FP
+* Conditions where the same pattern would actually be vulnerable
+* Number of integrations affected
+* Confidence level
+
+Also identify recurring **true-positive root causes**.
+
+For each TP determine:
+
+* Root vulnerability cause
+* Common vs integration-specific implementation
+* Number of integrations affected
+* Whether one fix in ESGA DataPower Common could eliminate the issue across many integrations
+* Which integrations override the common file and therefore require separate remediation
+* Recommended permanent remediation
+
+Do not treat 80 repositories as 80 independent problems.
+
+Cluster equivalent implementations into security patterns.
+
+For example:
+
+`Pattern → inherited from Common in 55 repos → overridden in 10 → not applicable in 15`
+
+## Expected Output
+
+Produce:
+
+### 1. Build Model
+
+Explain how Common + integration-specific files become the final deployable artifact and confirm override precedence.
+
+### 2. FP Catalogue
+
+Recurring false-positive patterns with evidence, conditions, exceptions and affected repo counts.
+
+### 3. TP Catalogue
+
+Recurring true-positive root causes, affected repo counts and permanent remediation opportunities.
+
+### 4. Common Fix Opportunities
+
+Identify TP patterns where fixing ESGA DataPower Common once could eliminate the vulnerability across many integrations, including integrations that override the affected file.
+
+### 5. LLM Scanner Knowledge
+
+Create concise reusable knowledge that can later be supplied to GPT/LLM vulnerability scans so known FP patterns are understood before vulnerabilities are raised.
+
+### 6. Repo/Pattern Matrix
+
+Map repositories to FP/TP patterns and indicate Common inheritance vs integration override.
+
+Use HIGH / MEDIUM / LOW confidence.
+
+Only HIGH-confidence FP patterns should be considered candidates for future scanner suppression.
+
+If something does not match a known pattern, classify it as a **new pattern requiring analysis** rather than forcing it into an FP category.
+
+## Important
+
+This session is for **analysis only**.
+
+Do not modify code or create PRs.
+
+The goal is:
+
+**Understand recurring FP patterns + identify recurring TP root causes + find opportunities to fix vulnerability classes centrally rather than repeatedly fixing individual findings.**
 
 
 
